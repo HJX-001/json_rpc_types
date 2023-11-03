@@ -1,47 +1,14 @@
-pub mod error;
-pub mod request;
-pub mod response;
-
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, PartialEq)]
-pub struct Version2;
-
-impl Serialize for Version2 {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str("2.0")
-    }
-}
-
-impl<'de> Deserialize<'de> for Version2 {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let de: String = Deserialize::deserialize(deserializer)?;
-        if &de == "2.0" {
-            Ok(Version2)
-        } else {
-            Err(serde::de::Error::invalid_value(
-                serde::de::Unexpected::Str(&de),
-                &"2.0",
-            ))
-        }
-    }
-}
+pub mod types;
 
 // re exports
-pub use error::Error;
-pub use request::Request;
-pub use response::Response;
+pub use types::Error;
+pub use types::ErrorCode;
+pub use types::Request;
+pub use types::Response;
+pub use types::Version2;
 
 #[cfg(test)]
 mod tests {
-
-    use crate::{error::Error, request::Request, response::Response};
 
     use super::*;
 
@@ -71,8 +38,8 @@ mod tests {
 
     #[test]
     fn error() {
-        let error = Error::from(-32000);
-        let error_str = r#"{"code":-32000,"message":"Server error"}"#;
+        let error = Error::from(ErrorCode::ServerErrorEnd);
+        let error_str = r#"{"code":-32000,"message":"server error end"}"#;
 
         assert_eq!(&serde_json::to_string(&error).unwrap(), error_str);
         assert_eq!(serde_json::from_str::<Error>(error_str).unwrap(), error);
@@ -88,13 +55,13 @@ mod tests {
 
         let error_res: Response<()> = Response::Error {
             jsonrpc: crate::Version2,
-            error: Error::from(-32000),
+            error: Error::from(ErrorCode::ServerErrorEnd),
             id: Some("id".to_string()),
         };
 
         let result_res_str = r#"{"jsonrpc":"2.0","result":"result","id":"id"}"#;
         let error_res_str =
-            r#"{"jsonrpc":"2.0","error":{"code":-32000,"message":"Server error"},"id":"id"}"#;
+            r#"{"jsonrpc":"2.0","error":{"code":-32000,"message":"server error end"},"id":"id"}"#;
 
         assert_eq!(&serde_json::to_string(&result_res).unwrap(), result_res_str);
         assert_eq!(
