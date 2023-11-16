@@ -112,16 +112,16 @@ impl std::fmt::Display for Error {
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct Request<P> {
+pub struct Request {
     pub jsonrpc: Version2,
     pub method: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub params: Option<P>,
+    #[serde(skip_serializing_if = "Value::is_null")]
+    pub params: Value,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
 }
 
-impl<P> Request<P> {
+impl Request {
     pub const fn is_notification(&self) -> bool {
         self.id.is_none()
     }
@@ -129,10 +129,10 @@ impl<P> Request<P> {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum Response<R> {
+pub enum Response {
     Result {
         jsonrpc: Version2,
-        result: R,
+        result: Value,
         id: Option<String>,
     },
 

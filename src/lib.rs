@@ -26,14 +26,14 @@ mod tests {
         let req = Request {
             jsonrpc: Version2,
             method: "method".to_string(),
-            params: Some("params"),
+            params: "params".into(),
             id: Some("id".to_string()),
         };
 
         let req_str = r#"{"jsonrpc":"2.0","method":"method","params":"params","id":"id"}"#;
 
         assert_eq!(&serde_json::to_string(&req).unwrap(), req_str);
-        assert_eq!(serde_json::from_str::<Request<_>>(req_str).unwrap(), req);
+        assert_eq!(serde_json::from_str::<Request>(req_str).unwrap(), req);
     }
 
     #[test]
@@ -49,11 +49,11 @@ mod tests {
     fn response() {
         let result_res = Response::Result {
             jsonrpc: crate::Version2,
-            result: "result",
+            result: "result".into(),
             id: Some("id".to_string()),
         };
 
-        let error_res: Response<()> = Response::Error {
+        let error_res = Response::Error {
             jsonrpc: crate::Version2,
             error: Error::from(ErrorCode::ServerErrorEnd),
             id: Some("id".to_string()),
@@ -65,13 +65,13 @@ mod tests {
 
         assert_eq!(&serde_json::to_string(&result_res).unwrap(), result_res_str);
         assert_eq!(
-            serde_json::from_str::<Response<_>>(result_res_str).unwrap(),
+            serde_json::from_str::<Response>(result_res_str).unwrap(),
             result_res
         );
 
         assert_eq!(&serde_json::to_string(&error_res).unwrap(), error_res_str);
         assert_eq!(
-            serde_json::from_str::<Response<_>>(error_res_str).unwrap(),
+            serde_json::from_str::<Response>(error_res_str).unwrap(),
             error_res
         );
     }
